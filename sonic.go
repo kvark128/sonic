@@ -5,6 +5,7 @@ import "C"
 
 import (
 	"errors"
+	"runtime"
 	"unsafe"
 )
 
@@ -17,13 +18,15 @@ type Stream struct {
 }
 
 func NewStream(sampleRate, channels int) *Stream {
-	return &Stream{
+	s := &Stream{
 		sampleRate: sampleRate,
 		channels:   channels,
 		sampleSize: channels * 2,
 		speed:      1.0,
 		stream:     C.sonicCreateStream(C.int(sampleRate), C.int(channels)),
 	}
+	runtime.SetFinalizer(s, func(s *Stream) { C.sonicDestroyStream(s.stream) })
+	return s
 }
 
 func (s *Stream) Write(data []byte) (int, error) {
@@ -63,9 +66,4 @@ func (s *Stream) SetSpeed(speed float64) {
 
 func (s *Stream) Flush() int {
 	return int(C.sonicFlushStream(s.stream))
-}
-
-func (s *Stream) Close() error {
-	C.sonicDestroyStream(s.stream)
-	return nil
 }
