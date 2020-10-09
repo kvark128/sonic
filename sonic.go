@@ -9,11 +9,17 @@ import (
 	"unsafe"
 )
 
+const (
+	DEFAULT_SPEED  = 1.0
+	DEFAULT_VOLUME = 1.0
+)
+
 type Stream struct {
 	sampleRate int
 	channels   int
 	sampleSize int
 	speed      float64
+	volume     float64
 	stream     C.sonicStream
 }
 
@@ -22,7 +28,8 @@ func NewStream(sampleRate, channels int) *Stream {
 		sampleRate: sampleRate,
 		channels:   channels,
 		sampleSize: channels * 2,
-		speed:      1.0,
+		speed:      DEFAULT_SPEED,
+		volume:     DEFAULT_VOLUME,
 		stream:     C.sonicCreateStream(C.int(sampleRate), C.int(channels)),
 	}
 	runtime.SetFinalizer(s, func(s *Stream) { C.sonicDestroyStream(s.stream) })
@@ -62,6 +69,15 @@ func (s *Stream) Speed() float64 {
 func (s *Stream) SetSpeed(speed float64) {
 	s.speed = speed
 	C.sonicSetSpeed(s.stream, C.float(s.speed))
+}
+
+func (s *Stream) Volume() float64 {
+	return s.volume
+}
+
+func (s *Stream) SetVolume(volume float64) {
+	s.volume = volume
+	C.sonicSetVolume(s.stream, C.float(s.volume))
 }
 
 func (s *Stream) Flush() int {
