@@ -11,16 +11,17 @@ import (
 
 const (
 	DEFAULT_SPEED  = 1.0
+	DEFAULT_PITCH  = 1.0
+	DEFAULT_RATE   = 1.0
 	DEFAULT_VOLUME = 1.0
 )
 
 type Stream struct {
-	sampleRate int
-	channels   int
-	sampleSize int
-	speed      float64
-	volume     float64
-	stream     C.sonicStream
+	sampleRate                 int
+	channels                   int
+	sampleSize                 int
+	speed, pitch, rate, volume float64
+	stream                     C.sonicStream
 }
 
 func NewStream(sampleRate, channels int) *Stream {
@@ -29,6 +30,8 @@ func NewStream(sampleRate, channels int) *Stream {
 		channels:   channels,
 		sampleSize: channels * 2,
 		speed:      DEFAULT_SPEED,
+		pitch:      DEFAULT_PITCH,
+		rate:       DEFAULT_RATE,
 		volume:     DEFAULT_VOLUME,
 		stream:     C.sonicCreateStream(C.int(sampleRate), C.int(channels)),
 	}
@@ -69,6 +72,24 @@ func (s *Stream) Speed() float64 {
 func (s *Stream) SetSpeed(speed float64) {
 	s.speed = speed
 	C.sonicSetSpeed(s.stream, C.float(s.speed))
+}
+
+func (s *Stream) Pitch() float64 {
+	return s.pitch
+}
+
+func (s *Stream) SetPitch(pitch float64) {
+	s.pitch = pitch
+	C.sonicSetPitch(s.stream, C.float(s.pitch))
+}
+
+func (s *Stream) Rate() float64 {
+	return s.rate
+}
+
+func (s *Stream) SetRate(rate float64) {
+	s.rate = rate
+	C.sonicSetRate(s.stream, C.float(s.rate))
 }
 
 func (s *Stream) Volume() float64 {
