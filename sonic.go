@@ -101,6 +101,14 @@ func (s *Stream) SetVolume(volume float64) {
 	C.sonicSetVolume(s.stream, C.float(s.volume))
 }
 
+func (s *Stream) SetChordPitch(useChordPitch bool) {
+	if useChordPitch {
+		C.sonicSetChordPitch(s.stream, C.int(1))
+	} else {
+		C.sonicSetChordPitch(s.stream, C.int(0))
+	}
+}
+
 func (s *Stream) Flush() int {
 	return int(C.sonicFlushStream(s.stream))
 }
