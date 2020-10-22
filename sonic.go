@@ -18,22 +18,23 @@ const (
 
 type Stream struct {
 	sampleRate                 int
-	channels                   int
+	numChannels                int
 	sampleSize                 int
+	useChordPitch              bool
 	speed, pitch, rate, volume float64
 	stream                     C.sonicStream
 }
 
-func NewStream(sampleRate, channels int) *Stream {
+func NewStream(sampleRate, numChannels int) *Stream {
 	s := &Stream{
-		sampleRate: sampleRate,
-		channels:   channels,
-		sampleSize: channels * 2,
-		speed:      DEFAULT_SPEED,
-		pitch:      DEFAULT_PITCH,
-		rate:       DEFAULT_RATE,
-		volume:     DEFAULT_VOLUME,
-		stream:     C.sonicCreateStream(C.int(sampleRate), C.int(channels)),
+		sampleRate:  sampleRate,
+		numChannels: numChannels,
+		sampleSize:  numChannels * 2,
+		speed:       DEFAULT_SPEED,
+		pitch:       DEFAULT_PITCH,
+		rate:        DEFAULT_RATE,
+		volume:      DEFAULT_VOLUME,
+		stream:      C.sonicCreateStream(C.int(sampleRate), C.int(numChannels)),
 	}
 	runtime.SetFinalizer(s, func(s *Stream) { C.sonicDestroyStream(s.stream) })
 	return s
@@ -101,8 +102,22 @@ func (s *Stream) SetVolume(volume float64) {
 	C.sonicSetVolume(s.stream, C.float(s.volume))
 }
 
+func (s *Stream) NumChannels() int {
+	return s.numChannels
+}
+
+func (s *Stream) SetNumChannels(numChannels int) {
+	s.numChannels = numChannels
+	C.sonicSetNumChannels(s.stream, C.int(s.numChannels))
+}
+
+func (s *Stream) ChordPitch() bool {
+	return s.useChordPitch
+}
+
 func (s *Stream) SetChordPitch(useChordPitch bool) {
-	if useChordPitch {
+	s.useChordPitch = useChordPitch
+	if s.useChordPitch {
 		C.sonicSetChordPitch(s.stream, C.int(1))
 	} else {
 		C.sonicSetChordPitch(s.stream, C.int(0))
