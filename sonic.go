@@ -29,13 +29,18 @@ func NewStream(sampleRate, numChannels int) *Stream {
 	s := &Stream{
 		sampleRate:  sampleRate,
 		numChannels: numChannels,
-		sampleSize:  numChannels * 2,
+		sampleSize:  numChannels * C.sizeof_short,
 		speed:       DEFAULT_SPEED,
 		pitch:       DEFAULT_PITCH,
 		rate:        DEFAULT_RATE,
 		volume:      DEFAULT_VOLUME,
 		stream:      C.sonicCreateStream(C.int(sampleRate), C.int(numChannels)),
 	}
+
+	if s.stream == nil {
+		panic("sonicCreateStream returned NULL")
+	}
+
 	runtime.SetFinalizer(s, func(s *Stream) { C.sonicDestroyStream(s.stream) })
 	return s
 }
