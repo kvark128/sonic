@@ -5,6 +5,7 @@ import "C"
 
 import (
 	"errors"
+	"io"
 	"runtime"
 	"unsafe"
 )
@@ -60,9 +61,12 @@ func (s *Stream) Write(data []byte) (int, error) {
 func (s *Stream) Read(data []byte) (int, error) {
 	nSamples := len(data) / s.sampleSize
 	if nSamples == 0 {
-		return 0, nil
+		return 0, io.ErrShortBuffer
 	}
 	readSamples := C.sonicReadShortFromStream(s.stream, (*C.short)(unsafe.Pointer(&data[0])), C.int(nSamples))
+	if readSamples == 0 {
+		return 0, io.EOF
+	}
 	return int(readSamples) * s.sampleSize, nil
 }
 
